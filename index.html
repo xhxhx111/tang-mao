@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>洗大锅 · 嘿嘿嘿</title>
+<style>
+  /* ========== 基础重置 ========== */
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* 还原设计图：顶部明黄色渐变，向下过渡为白色 */
+    background:
+      radial-gradient(ellipse 110% 42% at 50% -8%, rgba(255, 252, 226, .95), rgba(255, 252, 226, 0) 62%),
+      radial-gradient(circle at 12% 14%, rgba(255, 232, 120, .85), rgba(255, 232, 120, 0) 38%),
+      radial-gradient(circle at 88% 9%,  rgba(255, 238, 148, .75), rgba(255, 238, 148, 0) 34%),
+      linear-gradient(180deg, #ffd92e 0%, #ffe25a 16%, #ffec8a 30%, #fff5ba 42%, #fffce9 52%, #ffffff 60%, #ffffff 100%);
+  }
+  /* 黄白交界处的柔和云团（还原设计图过渡处的白色云朵感） */
+  body::before {
+    content: "";
+    position: fixed;
+    left: 0; right: 0; top: 38%;
+    height: 22%;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 8% 60%,  rgba(255,255,255,.95) 0 8%, rgba(255,255,255,0) 22%),
+      radial-gradient(circle at 92% 45%, rgba(255,255,255,.95) 0 9%, rgba(255,255,255,0) 24%),
+      radial-gradient(circle at 30% 85%, rgba(255,255,255,.8) 0 10%, rgba(255,255,255,0) 26%),
+      radial-gradient(circle at 70% 90%, rgba(255,255,255,.8) 0 10%, rgba(255,255,255,0) 26%);
+    filter: blur(2px);
+  }
+
+  /* ========== 主区域布局 ========== */
+  .stage {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: clamp(16px, 4vh, 40px) 20px 40px;
+  }
+
+  /* ========== 角色卡片（还原设计图圆角奶油边框卡片） ========== */
+  .card {
+    margin-top: clamp(8px, 22vh, 260px);
+    width: min(74vw, 340px);
+    aspect-ratio: 1 / 1;
+    background: #fffbe9;
+    border: clamp(5px, 1.6vw, 9px) solid #fff6d8;
+    border-radius: clamp(20px, 6vw, 30px);
+    box-shadow:
+      0 10px 28px rgba(224, 178, 60, .38),
+      0 2px 6px rgba(224, 178, 60, .25),
+      inset 0 0 0 2px rgba(255, 255, 255, .8);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+  }
+
+  /* ========== 按钮行（左「洗大锅」右「嘿嘿嘿」，还原设计图胶囊按钮） ========== */
+  .buttons {
+    margin-top: clamp(28px, 7vh, 64px);
+    display: flex;
+    gap: clamp(20px, 6vw, 48px);
+    justify-content: center;
+    width: 100%;
+  }
+  .btn-wrap { position: relative; }
+
+  .btn {
+    /* 移动端可点区域 ≥ 44px */
+    min-width: clamp(120px, 34vw, 168px);
+    min-height: 52px;
+    padding: 13px 30px;
+    font-size: clamp(19px, 5vw, 23px);
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #b06a2a;                       /* 设计图中的棕橙色文字 */
+    background: linear-gradient(180deg, #fffdf3 0%, #fdf1d0 55%, #fbe9bd 100%);
+    border: 2px solid #e9c979;            /* 金色描边 */
+    border-radius: 999px;                 /* 胶囊形状 */
+    cursor: pointer;
+    box-shadow:
+      0 5px 12px rgba(214, 164, 58, .45), /* 底部金色投影 */
+      0 1px 2px rgba(214, 164, 58, .3),
+      inset 0 2px 0 rgba(255, 255, 255, .95),
+      inset 0 -3px 5px rgba(233, 201, 121, .55);
+    transition: transform .08s ease, box-shadow .08s ease, filter .2s ease;
+  }
+  /* 按压反馈：缩放 + 阴影内陷 */
+  .btn:active, .btn.pressed {
+    transform: scale(.92);
+    box-shadow:
+      0 1px 4px rgba(214, 164, 58, .5),
+      inset 0 2px 6px rgba(214, 164, 58, .35);
+    filter: brightness(1.05);
+  }
+  .btn:focus-visible { outline: 3px solid #d8a63c; outline-offset: 3px; }
+
+  /* 叠加层数小徽标（0 层时隐藏，不影响设计图主体观感） */
+  .badge {
+    position: absolute;
+    top: -8px; right: -6px;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffd94d, #f0b429);
+    border: 2px solid #fff6d8;
+    color: #7a4a12;
+    font-size: 13px;
+    font-weight: 800;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(214, 164, 58, .5);
+    pointer-events: none;
+  }
+  .badge.show { display: flex; }
+
+  /* 窄屏时按钮保持并排（设计图即左右并排），过窄则缩小字号 */
+  @media (max-width: 340px) {
+    .btn { padding: 12px 18px; letter-spacing: 1px; }
+  }
+</style>
+</head>
+<body>
+  <main class="stage">
+    <!-- 角色卡片：图片为从设计图中提取的角色素材，卡片边框/阴影为纯 CSS 还原 -->
+    <div class="card" aria-hidden="true">
+      <img src="character.png" alt="">
+    </div>
+
+    <div class="buttons">
+      <!--
+        按钮与音频映射（按设计图按钮文字匹配）：
+        左侧「洗大锅」按钮 → 洗大锅.mp3
+        右侧「嘿嘿嘿」按钮 → 嘿嘿嘿.mp3
+      -->
+      <div class="btn-wrap">
+        <button id="btn-xidaguo" class="btn" aria-label="洗大锅">洗大锅</button>
+        <span class="badge" id="badge-xidaguo" aria-hidden="true">0</span>
+      </div>
+      <div class="btn-wrap">
+        <button id="btn-heiheihei" class="btn" aria-label="嘿嘿嘿">嘿嘿嘿</button>
+        <span class="badge" id="badge-heiheihei" aria-hidden="true">0</span>
+      </div>
+    </div>
+  </main>
+
+<script>
+(function () {
+  'use strict';
+
+  /**
+   * 叠加策略：无限叠加，无层数上限。
+   * - 每次点击都通过 new Audio() 创建全新实例，不复用实例，从而实现重叠播放。
+   * - 两个按钮的实例各自独立计数、互不影响，同时点击互不打断。
+   *
+   * 实时回收策略（防止页面越来越卡）：
+   * - 音频播放结束（ended）或加载失败（error）时立即销毁实例、释放引用并回收计数。
+   * - 另有兜底定时器：按音频实际时长 + 1 秒缓冲强制回收，
+   *   即使 ended 事件因异常未触发，实例也一定会被及时清理，避免内存泄漏。
+   */
+
+  /**
+   * 中文音频文件名处理：
+   * 使用 encodeURI() 对中文路径进行百分号编码，
+   * 确保「洗大锅.mp3」「嘿嘿嘿.mp3」能被各浏览器正确加载。
+   */
+  var SOUNDS = {
+    xidaguo:   { file: encodeURI('洗大锅.mp3'), active: 0, instances: [] },
+    heiheihei: { file: encodeURI('嘿嘿嘿.mp3'), active: 0, instances: [] }
+  };
+
+  var buttons = {
+    xidaguo:   document.getElementById('btn-xidaguo'),
+    heiheihei: document.getElementById('btn-heiheihei')
+  };
+  var badges = {
+    xidaguo:   document.getElementById('badge-xidaguo'),
+    heiheihei: document.getElementById('badge-heiheihei')
+  };
+
+  function updateBadge(key) {
+    var n = SOUNDS[key].active;
+    var b = badges[key];
+    b.textContent = n;
+    b.classList.toggle('show', n > 0);
+  }
+
+  function play(key) {
+    var s = SOUNDS[key];
+
+    /* 计数在点击的同步流程中递增，保证快速连点时计数准确 */
+    s.active++;
+    updateBadge(key);
+
+    var audio = new Audio(s.file); /* 全新实例，支持无限叠加 */
+    s.instances.push(audio);
+    var released = false;
+    var fallbackTimer = null;
+
+    /* 实时回收：播放结束 / 加载失败时立即清理实例并回收计数，避免内存泄漏、页面变卡 */
+    function release() {
+      if (released) return;
+      released = true;
+      if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
+      s.active = Math.max(0, s.active - 1);
+      updateBadge(key);
+      var i = s.instances.indexOf(audio);
+      if (i !== -1) s.instances.splice(i, 1);
+      audio.removeEventListener('ended', release);
+      audio.removeEventListener('error', release);
+      audio.removeEventListener('loadedmetadata', onMeta);
+      try { audio.pause(); audio.removeAttribute('src'); audio.load(); } catch (e) {}
+    }
+    audio.addEventListener('ended', release);
+    audio.addEventListener('error', release);
+
+    /* 兜底回收：若 ended 事件因异常未触发，按音频实际时长 + 1 秒缓冲强制回收 */
+    function onMeta() {
+      if (released || !isFinite(audio.duration)) return;
+      fallbackTimer = setTimeout(release, audio.duration * 1000 + 1000);
+    }
+    audio.addEventListener('loadedmetadata', onMeta);
+
+    /* play() 返回 Promise，捕获 rejection 防止未处理异常（移动端自动播放策略等） */
+    var p = audio.play();
+    if (p && typeof p.catch === 'function') {
+      p.catch(function () { release(); });
+    }
+  }
+
+  /* 绑定点击：两个按钮各自独立播放、独立计数，互不打断 */
+  buttons.xidaguo.addEventListener('click', function () { play('xidaguo'); });
+  buttons.heiheihei.addEventListener('click', function () { play('heiheihei'); });
+
+  /* 页面关闭/刷新时释放所有音频实例 */
+  window.addEventListener('pagehide', function () {
+    Object.keys(SOUNDS).forEach(function (key) {
+      SOUNDS[key].instances.forEach(function (a) {
+        try { a.pause(); a.removeAttribute('src'); a.load(); } catch (e) {}
+      });
+      SOUNDS[key].instances.length = 0;
+      SOUNDS[key].active = 0;
+    });
+  });
+})();
+</script>
+</body>
+</html>
